@@ -15,18 +15,18 @@ namespace ProbabilitiesTest
     [TestClass]
     public class JsonFileLogServiceTest
     {
-        //Set up a service variable, refreshable for each use. Sets Web Root Path to F drive.
+        //Set up a service variable, refreshable for each use. Sets Web Root Path to C drive.
         //Using Mock to create a fake IWebHostEnvironment for testing purposes.
         private JsonFileLogService LogServiceSetup()
         {
             var Mock = new Mock<IWebHostEnvironment>();
             Mock.SetupAllProperties();
-            Mock.Object.WebRootPath = "F:/";
+            Mock.Object.WebRootPath = "C:/";
             var Service = new JsonFileLogService(Mock.Object);
             return Service;
         }
 
-        //Return the full file path (returns "F:\Data\log.json").
+        //Return the full file path (returns "C:\Data\log.json").
         private string FileName(IWebHostEnvironment Environment)
         {
             return Path.Combine(Environment.WebRootPath, "data", "log.json");
