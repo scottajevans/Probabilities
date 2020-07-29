@@ -1,0 +1,95 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+@*
+Small welcome message explaining the application.    
+*@
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Enter two numbers below and click to calculate the probility using one of the methods available.</p>
+    <p>You can change which method you are using by selecting from the drop down.</p>
+</div>
+
+@*
+Form comprised of the 3 inputs (2 number, 1 select), submit button and the result display.
+Rather than submitting the form, I have used a button to call a function to validate first then proceed to the API call.
+This stops data being cleared after each submit allowing review for the user and easy transition to switch between the calculation types.
+*@
+<form onsubmit="return false">
+    <label class="field" for="inputOne">First probability:</label><input type="number" step="any" required id="inputOne" min="0" max="1" class="numberVal" onchange="removeError(this)"/>
+    <label class="field" for="inputTwo">Second probability:</label><input type="number" step="any" required id="inputTwo" min="0" max="1" class="numberVal" onchange="removeError(this)" />
+    <label class="field" for="switch">Calculation type:</label>
+    <select name="switch" id="switch">
+        <option value="combined">Combined With</option>
+        <option value="either">Either</option>
+    </select>
+    <button class="btn btn-primary" style="margin-top:30px;"type="submit" onclick="validate()">Calculate</button>
+    <div style="margin-top:30px;" id="resultDiv">
+        <label for="calculatedValue">Result:</label>
+        <h3 id="calculatedValue">Please provide some values.</h3>
+    </div>
+</form>
+
+<script>
+    //Reset any error messages, triggered onchange of input boxes
+    function removeError(input) {
+        input.setCustomValidity("");
+    }
+
+    //Function to validate the input, on front end (this is covered by back also).
+    //Take list of all number type inputs and validate they are >0 and <1.
+    //If this fails, put an error message on the field to alert user.
+    //Else pass the variables onto the API call function.
+    function validate() {
+        var inputList = document.querySelectorAll("input[type=number]");
+        var switchVal = document.getElementById("switch").value;
+        var failed = false;
+
+        for (var i = 0; i < inputList.length; i++) {
+            var element = inputList[i];
+            element.setCustomValidity("");
+            if (element.value < 0 || element.value > 1) {
+                element.setCustomValidity("Value must be between 0 and 1.")
+                failed = true;
+            }
+        }
+        if (!failed) {
+            sendToCalc(inputOne.value, inputTwo.value, switchVal);
+        } else {
+            document.getElementById("calculatedValue").innerHTML = "Inputs are invalid, please check your values."
+        }
+    }
+
+    //Function to take the values and send back to the API.
+    function sendToCalc(inputOneVal, inputTwoVal, switchVal) {
+        var resultBox = document.getElementById("calculatedValue");
+        var url = ""
+
+        //Define the URL based on the selected function type.
+        if (switchVal == "combined") {
+            url = "/api/combined";
+        } else {
+            url = "/api/either";
+        }
+
+        //Ajax call to send get request with params back to the API. On success/error display the message.
+        $.ajax({
+            type: "GET",
+            url: url,
+            data: {
+                "inputOne": inputOneVal,
+                "inputTwo": inputTwoVal
+            },
+            async: true,
+            success: function (msg) {
+                 resultBox.innerHTML = msg;
+            },
+            error: function (err) {
+                resultBox.innerHTML = err.responseJSON.title;
+            }
+        });
+    }
+</script>
